@@ -99,8 +99,8 @@ class ProposalModule(nn.Module):
             sample_inds = torch.randint(0, num_seed, (batch_size, self.num_proposal), dtype=torch.int).cuda()
             xyz, features, _ = self.vote_aggregation(xyz, features, sample_inds)
         else:
-            log_string('Unknown sampling strategy: %s. Exiting!'%(self.sampling))
-            exit()
+            raise NotImplementedError('Unknown sampling strategy: %s. Exiting!'%(self.sampling))
+            
         end_points['aggregated_vote_xyz'] = xyz # (batch_size, num_proposal, 3)
         end_points['aggregated_vote_inds'] = sample_inds # (batch_size, num_proposal,) # should be 0,1,2,...,num_proposal
 
@@ -111,14 +111,3 @@ class ProposalModule(nn.Module):
 
         end_points = decode_scores(net, end_points, self.num_class, self.num_heading_bin, self.num_size_cluster, self.mean_size_arr)
         return end_points
-
-if __name__=='__main__':
-    sys.path.append(os.path.join(ROOT_DIR, 'sunrgbd'))
-    from sunrgbd_detection_dataset import SunrgbdDetectionVotesDataset, DC
-    net = ProposalModule(DC.num_class, DC.num_heading_bin,
-        DC.num_size_cluster, DC.mean_size_arr,
-        128, 'seed_fps').cuda()
-    end_points = {'seed_xyz': torch.rand(8,1024,3).cuda()}
-    out = net(torch.rand(8,1024,3).cuda(), torch.rand(8,256,1024).cuda(), end_points)
-    for key in out:
-        print(key, out[key].shape)

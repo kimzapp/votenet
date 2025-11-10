@@ -131,12 +131,3 @@ class Pointnet2Backbone(nn.Module):
         num_seed = end_points['fp2_xyz'].shape[1]
         end_points['fp2_inds'] = end_points['sa1_inds'][:,0:num_seed] # indices among the entire input point clouds
         return end_points
-
-
-if __name__=='__main__':
-    backbone_net = Pointnet2Backbone(input_feature_dim=3).cuda()
-    print(backbone_net)
-    backbone_net.eval()
-    out = backbone_net(torch.rand(16,20000,6).cuda())
-    for key in sorted(out.keys()):
-        print(key, '\t', out[key].shape)

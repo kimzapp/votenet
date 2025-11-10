@@ -86,30 +86,3 @@ class BoxNet(nn.Module):
         end_points = self.pnet(xyz, features, end_points)
 
         return end_points
-
-
-if __name__=='__main__':
-    sys.path.append(os.path.join(ROOT_DIR, 'sunrgbd'))
-    from sunrgbd_detection_dataset import SunrgbdDetectionVotesDataset, DC
-
-    # Define dataset
-    TRAIN_DATASET = SunrgbdDetectionVotesDataset('train', num_points=20000, use_v1=True)
-
-    # Define model
-    model = BoxNet(10,12,10,np.random.random((10,3))).cuda()
-
-    # Model forward pass
-    sample = TRAIN_DATASET[5]
-    inputs = {'point_clouds': torch.from_numpy(sample['point_clouds']).unsqueeze(0).cuda()}
-    end_points = model(inputs)
-    for key in end_points:
-        print(key, end_points[key])
-
-    # Compute loss
-    for key in sample:
-        end_points[key] = torch.from_numpy(sample[key]).unsqueeze(0).cuda()
-    loss, end_points = get_loss(end_points, DC)
-    print('loss', loss)
-    end_points['point_clouds'] = inputs['point_clouds']
-    end_points['pred_mask'] = np.ones((1,128))
-    dump_results(end_points, 'tmp', DC)
